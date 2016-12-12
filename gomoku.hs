@@ -50,4 +50,13 @@ printBoard board = printBoard 1 (length board) board
                 printRow x
                 printBoard (row+1) len xs
 
-test = let s = take 15 [0,0..] in printBoard [s,s,s,s,s, s,s,s,s,s, s,s,s,s,[0,0,0,1,0,0,0,0,0,0,2,1,0,0,0]]
+updateRow :: [Int] -> Int -> Int -> [Int]
+updateRow row 0 value = value : (tail row)
+updateRow row col value = (head row) : (updateRow (tail row) (col-1) value)
+
+updateBoard :: [[Int]] -> (Int, Int) -> Int -> [[Int]]
+updateBoard board (0, col) value = (updateRow (head board) col value) : (tail board)
+updateBoard board (row, col) value = (head board) : (updateBoard (tail board) (row-1, col) value) 
+
+emptyBoard = let s = take 15 [0,0..] in [s,s,s,s,s, s,s,s,s,s, s,s,s,s,s]
+updatedBoard = updateBoard (updateBoard emptyBoard (0, 0) 1) (14, 14) 2
