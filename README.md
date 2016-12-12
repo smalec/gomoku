@@ -1,1 +1,1 @@
-"# Gomoku" 
+# Gomoku
