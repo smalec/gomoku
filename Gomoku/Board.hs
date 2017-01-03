@@ -1,6 +1,15 @@
--- Bartosz Łągwa
+module Gomoku.Board where
+
+type Board = [[Int]]
 
 alphabet = "ABCDEFGHIJKLMNOPQRSTUWVXYZ"
+
+emptyBoard :: Int -> Board
+emptyBoard size = [take size [0,0..] | _ <- take size [0..]]
+
+isFullBoard :: Board -> Bool
+isFullBoard [] = True
+isFullBoard (x:xs) = if elem 0 x then False else isFullBoard xs
 
 printSpaces :: Int -> IO()
 printSpaces 0 = return ()
@@ -28,6 +37,7 @@ printBoardFooter mx placeholderLen =
     do
         printSpaces (placeholderLen + 1)
         printBoardFooter 0 mx
+        putStrLn ""
         where
             printBoardFooter :: Int -> Int -> IO()
             printBoardFooter curr mx = if curr == mx then putChar '\n' else
@@ -36,10 +46,10 @@ printBoardFooter mx placeholderLen =
                     putChar ' '
                     printBoardFooter (curr+1) mx
 
-printBoard :: [[Int]] -> IO()
+printBoard :: Board -> IO()
 printBoard board = printBoard 1 (length board) board
     where
-        printBoard :: Int -> Int -> [[Int]] -> IO()
+        printBoard :: Int -> Int -> Board -> IO()
         printBoard _ len [] =
             do
                 putChar '\n'
@@ -54,9 +64,6 @@ updateRow :: [Int] -> Int -> Int -> [Int]
 updateRow row 0 value = value : (tail row)
 updateRow row col value = (head row) : (updateRow (tail row) (col-1) value)
 
-updateBoard :: [[Int]] -> (Int, Int) -> Int -> [[Int]]
-updateBoard board (0, col) value = (updateRow (head board) col value) : (tail board)
-updateBoard board (row, col) value = (head board) : (updateBoard (tail board) (row-1, col) value) 
-
-emptyBoard = let s = take 15 [0,0..] in [s,s,s,s,s, s,s,s,s,s, s,s,s,s,s]
-updatedBoard = updateBoard (updateBoard emptyBoard (0, 0) 1) (14, 14) 2
+updateBoard :: Board -> (Int, Int) -> Int -> Board
+updateBoard board (row, 0) value = (updateRow (head board) row value) : (tail board)
+updateBoard board (row, col) value = (head board) : (updateBoard (tail board) (row, col-1) value)
