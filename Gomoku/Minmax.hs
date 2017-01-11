@@ -3,7 +3,8 @@ module Gomoku.Minmax where
 import Gomoku.Board
 
 type Sequance = (((Int, Int), (Int, Int)), [(Int, Int)])
-type Score = ((Int, Int, Int, Int), (Int, Int, Int, Int), (Int, Int, Int, Int), (Int, Int, Int, Int), (Int, Int, Int, Int))
+type PartScore = (Int, Int, Int, Int)
+type Score = (PartScore, PartScore, PartScore, PartScore, PartScore)
 
 updateSequances :: [Sequance] -> (Int, Int) -> [Sequance]
 updateSequances [] _ = []
@@ -149,10 +150,10 @@ win :: [Sequance] -> Bool
 win [] = False
 win (sequance:xs) = if sequanceLength sequance >= 5 then True else win xs
 
-updateScores :: [(Int, Int, Int, Int)] -> Int -> Bool -> Int -> [(Int, Int, Int, Int)]
+updateScores :: [PartScore] -> Int -> Bool -> Int -> [PartScore]
 updateScores (x:xs) 0 open player = (updateScore x open player):xs
     where
-        updateScore :: (Int, Int, Int, Int) -> Bool -> Int -> (Int, Int, Int, Int)
+        updateScore :: PartScore -> Bool -> Int -> PartScore
         updateScore (openPlayer2, openPlayer1, player2, player1) open player =
             if open then
                 if player == 1 then
@@ -169,14 +170,14 @@ updateScores (x:xs) row open player = x:(updateScores xs (row-1) open player)
 scoreSequances :: [Sequance] -> [Sequance] -> Score
 scoreSequances sequances opponentSequances = scoreSequances sequances opponentSequances [(0,0,0,0) | _ <- take 5 [0..]]
     where
-        scoreSequances :: [Sequance] -> [Sequance] -> [(Int, Int, Int, Int)] -> Score
+        scoreSequances :: [Sequance] -> [Sequance] -> [PartScore] -> Score
         scoreSequances [] [] scores = convertToScore scores
         scoreSequances (sequance:xs) opponentSequances scores =
             scoreSequances xs opponentSequances (updateScores scores (maximum [5 - (sequanceLength sequance), 0]) (openSequance sequance) 1)
         scoreSequances [] (opponentSequance:xs) scores =
             scoreSequances [] xs (updateScores scores (maximum [5 - (sequanceLength opponentSequance), 0]) (openSequance opponentSequance) 2) 
 
-convertToScore :: [(Int, Int, Int, Int)] -> Score
+convertToScore :: [PartScore] -> Score
 convertToScore [fives, fours, threes, twos, ones] = (fives, fours, threes, twos, ones)
 
 nextMoves :: Board -> Int -> [(Int, Int)]
